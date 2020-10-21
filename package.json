@@ -1,0 +1,16 @@
+{
+  "name": "mainnet-staging",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ yieldprotocol/mainnet-staging",
+    "create-local": "graph create --node http://localhost:8020/ yieldprotocol/mainnet-staging",
+    "remove-local": "graph remove --node http://localhost:8020/ yieldprotocol/mainnet-staging",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 yieldprotocol/mainnet-staging"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.18.0",
+    "@graphprotocol/graph-ts": "0.18.0"
+  }
+}
