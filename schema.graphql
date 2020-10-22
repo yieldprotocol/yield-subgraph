@@ -4,4 +4,11 @@ type Maturity @entity {
   name: String!
   maturity: BigInt!
   totalSupply: BigDecimal!
+  pool: Pool @derivedFrom(field: "maturity")
+}
+
+type Pool @entity {
+  id: ID!
+  maturity: Maturity!
+  totalVolumeDai: BigDecimal!
 }

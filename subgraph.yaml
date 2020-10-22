@@ -20,6 +20,8 @@ dataSources:
           file: ./abis/Migrations.json
         - name: FYDai
           file: ./abis/FYDai.json
+        - name: Pool
+          file: ./abis/Pool.json
       eventHandlers:
         - event: Registered(bytes32,address)
           handler: handleRegistered
@@ -44,3 +46,21 @@ templates:
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
+  - name: Pool
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: Pool
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/pool.ts
+      entities:
+        - Pool
+      abis:
+        - name: Pool
+          file: ./abis/Pool.json
+      eventHandlers:
+        - event: Trade(uint256,indexed address,indexed address,int256,int256)
+          handler: handleTrade

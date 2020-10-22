@@ -1,4 +1,3 @@
-// import { BigInt } from "@graphprotocol/graph-ts"
 import { FYDai, Transfer } from "../generated/templates/FYDai/FYDai"
 import { Maturity } from "../generated/schema"
 import { EIGHTEEN_DECIMALS } from './lib'
