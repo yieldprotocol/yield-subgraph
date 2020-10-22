@@ -1,6 +1,7 @@
-type ExampleEntity @entity {
+type Maturity @entity {
   id: ID!
-  count: BigInt!
-  previousOwner: Bytes! # address
-  newOwner: Bytes! # address
+  symbol: String!
+  name: String!
+  maturity: BigInt!
+  totalSupply: BigDecimal!
 }
