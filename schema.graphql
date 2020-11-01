@@ -12,3 +12,9 @@ type Pool @entity {
   maturity: Maturity!
   totalVolumeDai: BigDecimal!
 }
+
+type Account @entity {
+  id: ID!
+  collateralETH: BigDecimal!
+  collateralChai: BigDecimal!
+}

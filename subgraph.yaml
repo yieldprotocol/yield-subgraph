@@ -64,3 +64,21 @@ templates:
       eventHandlers:
         - event: Trade(uint256,indexed address,indexed address,int256,int256)
           handler: handleTrade
+  - name: Controller
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: Controller
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/controller.ts
+      entities:
+        - Account
+      abis:
+        - name: Controller
+          file: ./abis/Controller.json
+      eventHandlers:
+        - event: Posted(indexed bytes32,indexed address,int256)
+          handler: handlePosted

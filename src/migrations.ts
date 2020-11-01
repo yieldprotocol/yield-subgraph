@@ -3,12 +3,13 @@ import { Migrations, Registered } from "../generated/Migrations/Migrations"
 import { Maturity, Pool } from "../generated/schema"
 import { FYDai } from "../generated/templates/FYDai/FYDai"
 import { Pool as PoolContract } from "../generated/templates/Pool/Pool"
-import { FYDai as FYDaiTemplate, Pool as PoolTemplate } from '../generated/templates'
+import { FYDai as FYDaiTemplate, Pool as PoolTemplate, Controller } from '../generated/templates'
 
 enum ContractType {
   OTHER,
   SERIES,
   POOL,
+  CONTROLLER,
 }
 
 function getContractType(name: string): ContractType {
@@ -17,6 +18,9 @@ function getContractType(name: string): ContractType {
   }
   if (name.startsWith('fyDai')) {
     return ContractType.SERIES
+  }
+  if (name == 'Controller') {
+    return ContractType.CONTROLLER
   }
   return ContractType.OTHER
 }
@@ -48,5 +52,9 @@ export function handleRegistered(event: Registered): void {
     pool.save()
 
     PoolTemplate.create(event.params.addr)
+  }
+
+  if (contractType == ContractType.CONTROLLER) {
+    Controller.create(event.params.addr)
   }
 }
