@@ -82,3 +82,5 @@ templates:
       eventHandlers:
         - event: Posted(indexed bytes32,indexed address,int256)
           handler: handlePosted
+        - event: Borrowed(indexed bytes32,indexed uint256,indexed address,int256)
+          handler: handleBorrowed

@@ -17,4 +17,7 @@ type Account @entity {
   id: ID!
   collateralETH: BigDecimal!
   collateralChai: BigDecimal!
+  totalFYDaiDebt: BigDecimal!
+  totalFYDaiDebtFromETH: BigDecimal!
+  totalFYDaiDebtFromChai: BigDecimal!
 }
