@@ -1,3 +1,4 @@
+import { store } from '@graphprotocol/graph-ts'
 import { BigInt } from '@graphprotocol/graph-ts'
 import { Controller, Posted, Borrowed } from "../generated/templates/Controller/Controller"
 import { Account } from "../generated/schema"

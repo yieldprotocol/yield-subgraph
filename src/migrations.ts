@@ -1,6 +1,6 @@
-import { BigInt } from "@graphprotocol/graph-ts"
+import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
 import { Migrations, Registered } from "../generated/Migrations/Migrations"
-import { Maturity, Pool } from "../generated/schema"
+import { Maturity } from "../generated/schema"
 import { FYDai } from "../generated/templates/FYDai/FYDai"
 import { Pool as PoolContract } from "../generated/templates/Pool/Pool"
 import { FYDai as FYDaiTemplate, Pool as PoolTemplate, Controller } from '../generated/templates'
@@ -25,19 +25,27 @@ function getContractType(name: string): ContractType {
   return ContractType.OTHER
 }
 
+function getMaturity(address: Address): Maturity {
+  let maturity = Maturity.load(address.toHex())
+  if (!maturity) {
+    maturity = new Maturity(address.toHex())
+
+    let maturityContract = FYDai.bind(address)
+    maturity.name = maturityContract.name()
+    maturity.symbol = maturityContract.symbol()
+    maturity.maturity = maturityContract.maturity()
+    maturity.totalSupply = BigInt.fromI32(0).toBigDecimal()
+    maturity.totalVolumeDai = BigInt.fromI32(0).toBigDecimal()
+  }
+  return maturity!
+}
+
 export function handleRegistered(event: Registered): void {
   let contractType = getContractType(event.params.name.toString())
 
   if (contractType == ContractType.SERIES) {
-    let seriesContract = FYDai.bind(event.params.addr)
-
-    let series = new Maturity(event.params.addr.toHex())
-    series.name = seriesContract.name()
-    series.symbol = seriesContract.symbol()
-    series.maturity = seriesContract.maturity()
-    series.totalSupply = BigInt.fromI32(0).toBigDecimal()
-
-    series.save()
+    let maturity = getMaturity(event.params.addr)
+    maturity.save()
 
     FYDaiTemplate.create(event.params.addr)
   }
@@ -45,11 +53,9 @@ export function handleRegistered(event: Registered): void {
   if (contractType == ContractType.POOL) {
     let poolContract = PoolContract.bind(event.params.addr)
 
-    let pool = new Pool(event.params.addr.toHex())
-    pool.maturity = poolContract.fyDai().toHex()
-    pool.totalVolumeDai = BigInt.fromI32(0).toBigDecimal()
-
-    pool.save()
+    let maturity = getMaturity(poolContract.fyDai())
+    maturity.pool = event.params.addr
+    maturity.save()
 
     PoolTemplate.create(event.params.addr)
   }
