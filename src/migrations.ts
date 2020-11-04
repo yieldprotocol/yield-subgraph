@@ -48,6 +48,7 @@ function getMaturity(address: Address): Maturity {
     maturity.totalVolumeDai = BigInt.fromI32(0).toBigDecimal()
     maturity.poolFYDaiReserves = BigInt.fromI32(0).toBigDecimal()
     maturity.poolDaiReserves = BigInt.fromI32(0).toBigDecimal()
+    maturity.currentFYDaiPriceInDai = BigInt.fromI32(0).toBigDecimal()
   }
   return maturity!
 }
