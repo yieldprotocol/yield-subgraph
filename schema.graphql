@@ -1,3 +1,9 @@
+type Yield @entity {
+  id: ID!
+  totalFeesDai: BigDecimal!
+  totalVolumeDai: BigDecimal!
+}
+
 type Maturity @entity {
   id: ID!
   symbol: String!

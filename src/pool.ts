@@ -1,6 +1,6 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 import { Pool, Trade } from "../generated/templates/Pool/Pool"
-import { Maturity } from "../generated/schema"
+import { Maturity, Yield } from "../generated/schema"
 import { Pool as PoolContract } from "../generated/templates/Pool/Pool"
 import { EIGHTEEN_DECIMALS } from './lib'
 
@@ -22,5 +22,9 @@ export function handleTrade(event: Trade): void {
 
   maturity.totalVolumeDai += daiVolume
 
+  let yieldSingleton = Yield.load('1')
+  yieldSingleton.totalVolumeDai += daiVolume
+
   maturity.save()
+  yieldSingleton.save()
 }

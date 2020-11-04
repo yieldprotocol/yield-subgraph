@@ -1,6 +1,6 @@
 import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
 import { Migrations, Registered } from "../generated/Migrations/Migrations"
-import { Maturity } from "../generated/schema"
+import { Maturity, Yield } from "../generated/schema"
 import { FYDai } from "../generated/templates/FYDai/FYDai"
 import { Pool as PoolContract } from "../generated/templates/Pool/Pool"
 import { FYDai as FYDaiTemplate, Pool as PoolTemplate, Controller } from '../generated/templates'
@@ -25,6 +25,16 @@ function getContractType(name: string): ContractType {
   return ContractType.OTHER
 }
 
+function createYieldSingleton(): void {
+  let yieldSingleton = Yield.load('1')
+  if (yieldSingleton == null) {
+    yieldSingleton = new Yield('1')
+    yieldSingleton.totalVolumeDai = BigInt.fromI32(0).toBigDecimal()
+    yieldSingleton.totalFeesDai = BigInt.fromI32(0).toBigDecimal()
+    yieldSingleton.save()
+  }
+}
+
 function getMaturity(address: Address): Maturity {
   let maturity = Maturity.load(address.toHex())
   if (!maturity) {
@@ -41,6 +51,8 @@ function getMaturity(address: Address): Maturity {
 }
 
 export function handleRegistered(event: Registered): void {
+  createYieldSingleton()
+
   let contractType = getContractType(event.params.name.toString())
 
   if (contractType == ContractType.SERIES) {
