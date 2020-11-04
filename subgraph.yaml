@@ -64,6 +64,8 @@ templates:
       eventHandlers:
         - event: Trade(uint256,indexed address,indexed address,int256,int256)
           handler: handleTrade
+        - event: Liquidity(uint256,indexed address,indexed address,int256,int256,int256)
+          handler: handleLiquidity
   - name: Controller
     kind: ethereum/contract
     network: mainnet

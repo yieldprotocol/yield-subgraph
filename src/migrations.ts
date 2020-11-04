@@ -46,6 +46,8 @@ function getMaturity(address: Address): Maturity {
     maturity.maturity = maturityContract.maturity()
     maturity.totalSupply = BigInt.fromI32(0).toBigDecimal()
     maturity.totalVolumeDai = BigInt.fromI32(0).toBigDecimal()
+    maturity.poolFYDaiReserves = BigInt.fromI32(0).toBigDecimal()
+    maturity.poolDaiReserves = BigInt.fromI32(0).toBigDecimal()
   }
   return maturity!
 }

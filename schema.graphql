@@ -12,6 +12,9 @@ type Maturity @entity {
   totalSupply: BigDecimal!
   pool: Bytes
   totalVolumeDai: BigDecimal!
+
+  poolFYDaiReserves: BigDecimal!
+  poolDaiReserves: BigDecimal!
 }
 
 type Account @entity {
