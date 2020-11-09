@@ -17,6 +17,8 @@ type Maturity @entity {
 
   poolFYDaiReserves: BigDecimal!
   poolDaiReserves: BigDecimal!
+  poolFYDaiReservesWei: BigInt!
+  poolDaiReservesWei: BigInt!
 }
 
 type Account @entity {
@@ -26,4 +28,16 @@ type Account @entity {
   totalFYDaiDebt: BigDecimal!
   totalFYDaiDebtFromETH: BigDecimal!
   totalFYDaiDebtFromChai: BigDecimal!
+}
+
+type Trade @entity {
+  id: ID!
+  maturity: Maturity!
+  from: Bytes!
+  to: Bytes!
+
+  dai: BigDecimal!
+  fyDai: BigDecimal!
+
+  feeInDai: BigDecimal!
 }

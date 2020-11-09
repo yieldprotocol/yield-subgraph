@@ -4,6 +4,7 @@ import { Maturity, Yield } from "../generated/schema"
 import { FYDai } from "../generated/templates/FYDai/FYDai"
 import { Pool as PoolContract } from "../generated/templates/Pool/Pool"
 import { FYDai as FYDaiTemplate, Pool as PoolTemplate, Controller } from '../generated/templates'
+import { ZERO } from './lib'
 
 enum ContractType {
   OTHER,
@@ -48,6 +49,8 @@ function getMaturity(address: Address): Maturity {
     maturity.totalVolumeDai = BigInt.fromI32(0).toBigDecimal()
     maturity.poolFYDaiReserves = BigInt.fromI32(0).toBigDecimal()
     maturity.poolDaiReserves = BigInt.fromI32(0).toBigDecimal()
+    maturity.poolFYDaiReservesWei = ZERO
+    maturity.poolDaiReservesWei = ZERO
     maturity.currentFYDaiPriceInDai = BigInt.fromI32(0).toBigDecimal()
   }
   return maturity!
