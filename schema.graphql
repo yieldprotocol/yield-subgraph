@@ -6,6 +6,7 @@ type Yield @entity {
 
 type Maturity @entity {
   id: ID!
+  address: Bytes!
   symbol: String!
   name: String!
   maturity: BigInt!

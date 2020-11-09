@@ -42,6 +42,7 @@ function getMaturity(maturityTime: BigInt, address: Address): Maturity {
     maturity = new Maturity(maturityTime.toString())
 
     let maturityContract = FYDai.bind(address)
+    maturity.address = address
     maturity.name = maturityContract.name()
     maturity.symbol = maturityContract.symbol()
     maturity.maturity = maturityTime
