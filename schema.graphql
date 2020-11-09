@@ -1,6 +1,6 @@
 type Yield @entity {
   id: ID!
-  totalFeesDai: BigDecimal!
+  totalTradingFeesInDai: BigDecimal!
   totalVolumeDai: BigDecimal!
 }
 
@@ -12,6 +12,7 @@ type Maturity @entity {
   totalSupply: BigDecimal!
   pool: Bytes
   totalVolumeDai: BigDecimal!
+  totalTradingFeesInDai: BigDecimal!
 
   currentFYDaiPriceInDai: BigDecimal!
 

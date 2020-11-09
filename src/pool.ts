@@ -92,10 +92,14 @@ export function handleTrade(event: TradeEvent): void {
   let timeTillMaturity = maturity.maturity - event.block.timestamp
   trade.feeInDai = getFee(maturity.poolFYDaiReservesWei, maturity.poolDaiReservesWei, timeTillMaturity, event.params.fyDaiTokens)
 
+  // Update global stats
   let yieldSingleton = Yield.load('1')
   yieldSingleton.totalVolumeDai += daiVolume
+  yieldSingleton.totalTradingFeesInDai += trade.feeInDai
 
+  // Update maturity
   maturity.totalVolumeDai += daiVolume
+  maturity.totalTradingFeesInDai += trade.feeInDai
   updateMaturity(maturity, pool, event.block.timestamp)
 
   maturity.save()

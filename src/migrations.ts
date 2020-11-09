@@ -31,7 +31,7 @@ function createYieldSingleton(): void {
   if (yieldSingleton == null) {
     yieldSingleton = new Yield('1')
     yieldSingleton.totalVolumeDai = BigInt.fromI32(0).toBigDecimal()
-    yieldSingleton.totalFeesDai = BigInt.fromI32(0).toBigDecimal()
+    yieldSingleton.totalTradingFeesInDai = BigInt.fromI32(0).toBigDecimal()
     yieldSingleton.save()
   }
 }
@@ -47,6 +47,7 @@ function getMaturity(address: Address): Maturity {
     maturity.maturity = maturityContract.maturity()
     maturity.totalSupply = BigInt.fromI32(0).toBigDecimal()
     maturity.totalVolumeDai = BigInt.fromI32(0).toBigDecimal()
+    maturity.totalTradingFeesInDai = BigInt.fromI32(0).toBigDecimal()
     maturity.poolFYDaiReserves = BigInt.fromI32(0).toBigDecimal()
     maturity.poolDaiReserves = BigInt.fromI32(0).toBigDecimal()
     maturity.poolFYDaiReservesWei = ZERO
