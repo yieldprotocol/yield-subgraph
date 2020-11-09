@@ -21,15 +21,28 @@ type Maturity @entity {
   poolDaiReserves: BigDecimal!
   poolFYDaiReservesWei: BigInt!
   poolDaiReservesWei: BigInt!
+
+  vaults: [VaultMaturity!]! @derivedFrom(field: "maturity")
 }
 
-type Account @entity {
+type Vault @entity {
   id: ID!
   collateralETH: BigDecimal!
   collateralChai: BigDecimal!
   totalFYDaiDebt: BigDecimal!
   totalFYDaiDebtFromETH: BigDecimal!
   totalFYDaiDebtFromChai: BigDecimal!
+
+  maturities: [VaultMaturity!]! @derivedFrom(field: "vault")
+}
+
+type VaultMaturity @entity {
+  id: ID!
+  maturity: Maturity!
+  vault: Vault!
+  totalFYDaiDebt: BigDecimal!
+  fyDaiDebtFromETH: BigDecimal!
+  fyDaiDebtFromChai: BigDecimal!
 }
 
 type Trade @entity {

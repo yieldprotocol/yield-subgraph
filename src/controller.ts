@@ -1,14 +1,13 @@
-import { store } from '@graphprotocol/graph-ts'
-import { BigInt } from '@graphprotocol/graph-ts'
+import { store, ByteArray, BigInt } from '@graphprotocol/graph-ts'
 import { Controller, Posted, Borrowed } from "../generated/templates/Controller/Controller"
-import { Account } from "../generated/schema"
-import { EIGHTEEN_DECIMALS } from './lib'
+import { Vault, VaultMaturity } from "../generated/schema"
+import { EIGHTEEN_DECIMALS, ZERO } from './lib'
 
-function getAccount(address: string): Account {
-  let account = Account.load(address)
+function getVault(address: string): Vault {
+  let account = Vault.load(address)
 
   if (!account) {
-    account = new Account(address)
+    account = new Vault(address)
     account.collateralETH = BigInt.fromI32(0).toBigDecimal()
     account.collateralChai = BigInt.fromI32(0).toBigDecimal()
     account.totalFYDaiDebt = BigInt.fromI32(0).toBigDecimal()
@@ -19,8 +18,24 @@ function getAccount(address: string): Account {
   return account!
 }
 
+function getVaultMaturity(vault: string, maturity: string): VaultMaturity {
+  let id = vault + '-' + maturity
+  let vaultMaturity = VaultMaturity.load(id)
+
+  if (!vaultMaturity) {
+    vaultMaturity = new VaultMaturity(id)
+    vaultMaturity.vault = vault
+    vaultMaturity.maturity = maturity
+    vaultMaturity.totalFYDaiDebt = ZERO.toBigDecimal()
+    vaultMaturity.fyDaiDebtFromETH = ZERO.toBigDecimal()
+    vaultMaturity.fyDaiDebtFromChai = ZERO.toBigDecimal()
+  }
+
+  return vaultMaturity!
+}
+
 export function handlePosted(event: Posted): void {
-  let account = getAccount(event.params.user.toHex())
+  let account = getVault(event.params.user.toHex())
 
   let controllerContract = Controller.bind(event.address)
 
@@ -41,7 +56,8 @@ export function handlePosted(event: Posted): void {
 }
 
 export function handleBorrowed(event: Borrowed): void {
-  let account = getAccount(event.params.user.toHex())
+  let account = getVault(event.params.user.toHex())
+  let vaultMaturity = getVaultMaturity(event.params.user.toHex(), event.params.maturity.toString())
 
   let controllerContract = Controller.bind(event.address)
 
@@ -59,5 +75,14 @@ export function handleBorrowed(event: Borrowed): void {
     account.totalFYDaiDebtFromChai += borrowAmount
   }
 
+  vaultMaturity.fyDaiDebtFromETH = controllerContract
+    .debtFYDai(controllerContract.WETH(), event.params.maturity, event.params.user)
+    .divDecimal(EIGHTEEN_DECIMALS)
+  vaultMaturity.fyDaiDebtFromChai = controllerContract
+    .debtFYDai(controllerContract.CHAI(), event.params.maturity, event.params.user)
+    .divDecimal(EIGHTEEN_DECIMALS)
+  vaultMaturity.totalFYDaiDebt = vaultMaturity.fyDaiDebtFromETH + vaultMaturity.fyDaiDebtFromChai
+
   account.save()
+  vaultMaturity.save()
 }
