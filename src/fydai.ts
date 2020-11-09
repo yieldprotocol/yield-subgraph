@@ -3,9 +3,8 @@ import { Maturity } from "../generated/schema"
 import { EIGHTEEN_DECIMALS } from './lib'
 
 export function handleTransfer(event: Transfer): void {
-  let entity = Maturity.load(event.address.toHex())
-
   let fyDaiContract = FYDai.bind(event.address)
+  let entity = Maturity.load(fyDaiContract.maturity().toString())
 
   entity.totalSupply = fyDaiContract
     .totalSupply()

@@ -36,15 +36,15 @@ function createYieldSingleton(): void {
   }
 }
 
-function getMaturity(address: Address): Maturity {
-  let maturity = Maturity.load(address.toHex())
+function getMaturity(maturityTime: BigInt, address: Address): Maturity {
+  let maturity = Maturity.load(maturityTime.toString())
   if (!maturity) {
-    maturity = new Maturity(address.toHex())
+    maturity = new Maturity(maturityTime.toString())
 
     let maturityContract = FYDai.bind(address)
     maturity.name = maturityContract.name()
     maturity.symbol = maturityContract.symbol()
-    maturity.maturity = maturityContract.maturity()
+    maturity.maturity = maturityTime
     maturity.totalSupply = BigInt.fromI32(0).toBigDecimal()
     maturity.totalVolumeDai = BigInt.fromI32(0).toBigDecimal()
     maturity.totalTradingFeesInDai = BigInt.fromI32(0).toBigDecimal()
@@ -63,7 +63,8 @@ export function handleRegistered(event: Registered): void {
   let contractType = getContractType(event.params.name.toString())
 
   if (contractType == ContractType.SERIES) {
-    let maturity = getMaturity(event.params.addr)
+    let maturityContract = FYDai.bind(event.params.addr)
+    let maturity = getMaturity(maturityContract.maturity(), event.params.addr)
     maturity.save()
 
     FYDaiTemplate.create(event.params.addr)
@@ -72,7 +73,7 @@ export function handleRegistered(event: Registered): void {
   if (contractType == ContractType.POOL) {
     let poolContract = PoolContract.bind(event.params.addr)
 
-    let maturity = getMaturity(poolContract.fyDai())
+    let maturity = getMaturity(poolContract.maturity(), poolContract.fyDai())
     maturity.pool = event.params.addr
     maturity.save()
 

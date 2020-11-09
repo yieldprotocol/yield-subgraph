@@ -44,9 +44,9 @@ function getFee(fyDaiReserves: BigInt, daiReserves: BigInt, timeTillMaturity: Bi
 }
 
 
-function getMaturity(poolAddress: Address): Maturity {
+function getMaturityFromPool(poolAddress: Address): Maturity {
   let poolContract = Pool.bind(poolAddress)
-  let maturity = Maturity.load(poolContract.fyDai().toHex())
+  let maturity = Maturity.load(poolContract.maturity().toString())
   return maturity!
 }
 
@@ -73,7 +73,7 @@ function updateMaturity(maturity: Maturity, pool: Pool, timestamp: BigInt): void
 
 export function handleTrade(event: TradeEvent): void {
   let pool = Pool.bind(event.address)
-  let maturity = getMaturity(event.address)
+  let maturity = getMaturityFromPool(event.address)
 
   let daiVolume = event.params.daiTokens.toBigDecimal().div(EIGHTEEN_DECIMALS)
   if (daiVolume.lt(BigInt.fromI32(0).toBigDecimal())) {
@@ -108,7 +108,7 @@ export function handleTrade(event: TradeEvent): void {
 }
 
 export function handleLiquidity(event: Liquidity): void {
-  let maturity = getMaturity(event.address)
+  let maturity = getMaturityFromPool(event.address)
   let pool = Pool.bind(event.address)
 
   updateMaturity(maturity, pool, event.block.timestamp)
