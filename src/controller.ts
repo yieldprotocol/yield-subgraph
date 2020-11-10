@@ -1,6 +1,6 @@
 import { store, ByteArray, BigInt } from '@graphprotocol/graph-ts'
 import { Controller, Posted, Borrowed } from "../generated/templates/Controller/Controller"
-import { Vault, VaultMaturity, Yield } from "../generated/schema"
+import { Vault, VaultFYDai, Yield } from "../generated/schema"
 import { EIGHTEEN_DECIMALS, ZERO } from './lib'
 
 function getVault(address: string): Vault {
@@ -18,14 +18,14 @@ function getVault(address: string): Vault {
   return account!
 }
 
-function getVaultMaturity(vault: string, maturity: string): VaultMaturity {
+function getVaultFYDai(vault: string, maturity: string): VaultFYDai {
   let id = vault + '-' + maturity
-  let vaultMaturity = VaultMaturity.load(id)
+  let vaultMaturity = VaultFYDai.load(id)
 
   if (!vaultMaturity) {
-    vaultMaturity = new VaultMaturity(id)
+    vaultMaturity = new VaultFYDai(id)
     vaultMaturity.vault = vault
-    vaultMaturity.maturity = maturity
+    vaultMaturity.fyDai = maturity
     vaultMaturity.totalFYDaiDebt = ZERO.toBigDecimal()
     vaultMaturity.fyDaiDebtFromETH = ZERO.toBigDecimal()
     vaultMaturity.fyDaiDebtFromChai = ZERO.toBigDecimal()
@@ -62,7 +62,7 @@ export function handlePosted(event: Posted): void {
 export function handleBorrowed(event: Borrowed): void {
   let yieldSingleton = Yield.load('1')
   let account = getVault(event.params.user.toHex())
-  let vaultMaturity = getVaultMaturity(event.params.user.toHex(), event.params.maturity.toString())
+  let vaultMaturity = getVaultFYDai(event.params.user.toHex(), event.params.maturity.toString())
 
   let controllerContract = Controller.bind(event.address)
 

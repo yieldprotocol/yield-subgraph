@@ -1,7 +1,7 @@
 import { Address, BigInt, BigDecimal, log } from "@graphprotocol/graph-ts"
 import { Pool, Trade as TradeEvent, Liquidity } from "../generated/templates/Pool/Pool"
 import { YieldMathWrapper } from "../generated/templates/Pool/YieldMathWrapper"
-import { Maturity, Yield, Trade } from "../generated/schema"
+import { FYDai, Yield, Trade } from "../generated/schema"
 import { EIGHTEEN_DECIMALS, EIGHTEEN_ZEROS, ZERO } from './lib'
 
 let yieldMathAddress = Address.fromString('0xfcb06dce37a98081900fac325255d92dff94a107')
@@ -44,13 +44,13 @@ function getFee(fyDaiReserves: BigInt, daiReserves: BigInt, timeTillMaturity: Bi
 }
 
 
-function getMaturityFromPool(poolAddress: Address): Maturity {
+function getFYDaiFromPool(poolAddress: Address): FYDai {
   let poolContract = Pool.bind(poolAddress)
-  let maturity = Maturity.load(poolContract.maturity().toString())
+  let maturity = FYDai.load(poolContract.maturity().toString())
   return maturity!
 }
 
-function updateMaturity(maturity: Maturity, pool: Pool, timestamp: BigInt): void {
+function updateFYDai(maturity: FYDai, pool: Pool, timestamp: BigInt): void {
   maturity.poolFYDaiReservesWei = pool.getFYDaiReserves()
   maturity.poolFYDaiReserves = maturity.poolFYDaiReservesWei.toBigDecimal().div(EIGHTEEN_DECIMALS)
   maturity.poolDaiReservesWei = pool.getDaiReserves()
@@ -73,7 +73,7 @@ function updateMaturity(maturity: Maturity, pool: Pool, timestamp: BigInt): void
 
 export function handleTrade(event: TradeEvent): void {
   let pool = Pool.bind(event.address)
-  let maturity = getMaturityFromPool(event.address)
+  let maturity = getFYDaiFromPool(event.address)
 
   let daiVolume = event.params.daiTokens.toBigDecimal().div(EIGHTEEN_DECIMALS)
   if (daiVolume.lt(BigInt.fromI32(0).toBigDecimal())) {
@@ -82,11 +82,11 @@ export function handleTrade(event: TradeEvent): void {
 
   // Create Trade entity
   let trade = new Trade(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
-  trade.maturity = maturity.id
+  trade.fyDai = maturity.id
   trade.from = event.params.from
   trade.to = event.params.to
-  trade.dai = event.params.daiTokens.divDecimal(EIGHTEEN_DECIMALS)
-  trade.fyDai = event.params.fyDaiTokens.divDecimal(EIGHTEEN_DECIMALS)
+  trade.amountDai = event.params.daiTokens.divDecimal(EIGHTEEN_DECIMALS)
+  trade.amountFYDai = event.params.fyDaiTokens.divDecimal(EIGHTEEN_DECIMALS)
 
   setupConstants(pool)
   let timeTillMaturity = maturity.maturity - event.block.timestamp
@@ -100,7 +100,7 @@ export function handleTrade(event: TradeEvent): void {
   // Update maturity
   maturity.totalVolumeDai += daiVolume
   maturity.totalTradingFeesInDai += trade.feeInDai
-  updateMaturity(maturity, pool, event.block.timestamp)
+  updateFYDai(maturity, pool, event.block.timestamp)
 
   maturity.save()
   yieldSingleton.save()
@@ -108,10 +108,10 @@ export function handleTrade(event: TradeEvent): void {
 }
 
 export function handleLiquidity(event: Liquidity): void {
-  let maturity = getMaturityFromPool(event.address)
+  let maturity = getFYDaiFromPool(event.address)
   let pool = Pool.bind(event.address)
 
-  updateMaturity(maturity, pool, event.block.timestamp)
+  updateFYDai(maturity, pool, event.block.timestamp)
 
   maturity.save()
 }

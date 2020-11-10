@@ -1,10 +1,10 @@
-import { FYDai, Transfer } from "../generated/templates/FYDai/FYDai"
-import { Maturity } from "../generated/schema"
+import { FYDai as FYDaiContract, Transfer } from "../generated/templates/FYDai/FYDai"
+import { FYDai } from "../generated/schema"
 import { EIGHTEEN_DECIMALS } from './lib'
 
 export function handleTransfer(event: Transfer): void {
-  let fyDaiContract = FYDai.bind(event.address)
-  let entity = Maturity.load(fyDaiContract.maturity().toString())
+  let fyDaiContract = FYDaiContract.bind(event.address)
+  let entity = FYDai.load(fyDaiContract.maturity().toString())
 
   entity.totalSupply = fyDaiContract
     .totalSupply()

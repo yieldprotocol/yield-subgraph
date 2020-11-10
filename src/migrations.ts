@@ -1,7 +1,7 @@
 import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
 import { Migrations, Registered } from "../generated/Migrations/Migrations"
-import { Maturity, Yield } from "../generated/schema"
-import { FYDai } from "../generated/templates/FYDai/FYDai"
+import { FYDai, Yield } from "../generated/schema"
+import { FYDai as FYDaiContract } from "../generated/templates/FYDai/FYDai"
 import { Pool as PoolContract } from "../generated/templates/Pool/Pool"
 import { FYDai as FYDaiTemplate, Pool as PoolTemplate, Controller } from '../generated/templates'
 import { ZERO } from './lib'
@@ -43,12 +43,12 @@ function createYieldSingleton(): void {
   }
 }
 
-function getMaturity(maturityTime: BigInt, address: Address): Maturity {
-  let maturity = Maturity.load(maturityTime.toString())
+function getFYDai(maturityTime: BigInt, address: Address): FYDai {
+  let maturity = FYDai.load(maturityTime.toString())
   if (!maturity) {
-    maturity = new Maturity(maturityTime.toString())
+    maturity = new FYDai(maturityTime.toString())
 
-    let maturityContract = FYDai.bind(address)
+    let maturityContract = FYDaiContract.bind(address)
     maturity.address = address
     maturity.name = maturityContract.name()
     maturity.symbol = maturityContract.symbol()
@@ -71,8 +71,8 @@ export function handleRegistered(event: Registered): void {
   let contractType = getContractType(event.params.name.toString())
 
   if (contractType == ContractType.SERIES) {
-    let maturityContract = FYDai.bind(event.params.addr)
-    let maturity = getMaturity(maturityContract.maturity(), event.params.addr)
+    let maturityContract = FYDaiContract.bind(event.params.addr)
+    let maturity = getFYDai(maturityContract.maturity(), event.params.addr)
     maturity.save()
 
     FYDaiTemplate.create(event.params.addr)
@@ -81,7 +81,7 @@ export function handleRegistered(event: Registered): void {
   if (contractType == ContractType.POOL) {
     let poolContract = PoolContract.bind(event.params.addr)
 
-    let maturity = getMaturity(poolContract.maturity(), poolContract.fyDai())
+    let maturity = getFYDai(poolContract.maturity(), poolContract.fyDai())
     maturity.pool = event.params.addr
     maturity.save()
 

@@ -10,7 +10,7 @@ type Yield @entity {
   totalFYDaiDebtFromChai: BigDecimal!
 }
 
-type Maturity @entity {
+type FYDai @entity {
   id: ID!
   address: Bytes!
   symbol: String!
@@ -28,7 +28,7 @@ type Maturity @entity {
   poolFYDaiReservesWei: BigInt!
   poolDaiReservesWei: BigInt!
 
-  vaults: [VaultMaturity!]! @derivedFrom(field: "maturity")
+  vaults: [VaultFYDai!]! @derivedFrom(field: "fyDai")
 }
 
 type Vault @entity {
@@ -39,12 +39,12 @@ type Vault @entity {
   totalFYDaiDebtFromETH: BigDecimal!
   totalFYDaiDebtFromChai: BigDecimal!
 
-  maturities: [VaultMaturity!]! @derivedFrom(field: "vault")
+  maturities: [VaultFYDai!]! @derivedFrom(field: "vault")
 }
 
-type VaultMaturity @entity {
+type VaultFYDai @entity {
   id: ID!
-  maturity: Maturity!
+  fyDai: FYDai!
   vault: Vault!
   totalFYDaiDebt: BigDecimal!
   fyDaiDebtFromETH: BigDecimal!
@@ -53,12 +53,12 @@ type VaultMaturity @entity {
 
 type Trade @entity {
   id: ID!
-  maturity: Maturity!
+  fyDai: FYDai!
   from: Bytes!
   to: Bytes!
 
-  dai: BigDecimal!
-  fyDai: BigDecimal!
+  amountDai: BigDecimal!
+  amountFYDai: BigDecimal!
 
   feeInDai: BigDecimal!
 }
