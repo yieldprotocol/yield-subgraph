@@ -1,6 +1,6 @@
 import { store, ByteArray, BigInt } from '@graphprotocol/graph-ts'
 import { Controller, Posted, Borrowed } from "../generated/templates/Controller/Controller"
-import { Vault, VaultMaturity } from "../generated/schema"
+import { Vault, VaultMaturity, Yield } from "../generated/schema"
 import { EIGHTEEN_DECIMALS, ZERO } from './lib'
 
 function getVault(address: string): Vault {
@@ -35,6 +35,7 @@ function getVaultMaturity(vault: string, maturity: string): VaultMaturity {
 }
 
 export function handlePosted(event: Posted): void {
+  let yieldSingleton = Yield.load('1')
   let account = getVault(event.params.user.toHex())
 
   let controllerContract = Controller.bind(event.address)
@@ -46,33 +47,38 @@ export function handlePosted(event: Posted): void {
 
   if (event.params.collateral.toString() == 'ETH-A') {
     account.collateralETH = collateralBalance
+    yieldSingleton.collateralETH += event.params.amount.divDecimal(EIGHTEEN_DECIMALS)
   }
 
   if (event.params.collateral.toString() == 'CHAI') {
     account.collateralChai = collateralBalance
+    yieldSingleton.collateralChai += event.params.amount.divDecimal(EIGHTEEN_DECIMALS)
   }
 
   account.save()
+  yieldSingleton.save()
 }
 
 export function handleBorrowed(event: Borrowed): void {
+  let yieldSingleton = Yield.load('1')
   let account = getVault(event.params.user.toHex())
   let vaultMaturity = getVaultMaturity(event.params.user.toHex(), event.params.maturity.toString())
 
   let controllerContract = Controller.bind(event.address)
 
-  let borrowAmount = event.params.amount
-    .toBigDecimal()
-    .div(EIGHTEEN_DECIMALS)
+  let borrowAmount = event.params.amount.divDecimal(EIGHTEEN_DECIMALS)
 
   account.totalFYDaiDebt += borrowAmount
+  yieldSingleton.totalFYDaiDebt += borrowAmount
 
   if (event.params.collateral.toString() == 'ETH-A') {
     account.totalFYDaiDebtFromETH += borrowAmount
+    yieldSingleton.totalFYDaiDebtFromETH += borrowAmount
   }
 
   if (event.params.collateral.toString() == 'CHAI') {
     account.totalFYDaiDebtFromChai += borrowAmount
+    yieldSingleton.totalFYDaiDebtFromChai += borrowAmount
   }
 
   vaultMaturity.fyDaiDebtFromETH = controllerContract
@@ -85,4 +91,5 @@ export function handleBorrowed(event: Borrowed): void {
 
   account.save()
   vaultMaturity.save()
+  yieldSingleton.save()
 }

@@ -2,6 +2,12 @@ type Yield @entity {
   id: ID!
   totalTradingFeesInDai: BigDecimal!
   totalVolumeDai: BigDecimal!
+
+  collateralETH: BigDecimal!
+  collateralChai: BigDecimal!
+  totalFYDaiDebt: BigDecimal!
+  totalFYDaiDebtFromETH: BigDecimal!
+  totalFYDaiDebtFromChai: BigDecimal!
 }
 
 type Maturity @entity {

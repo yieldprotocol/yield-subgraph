@@ -32,6 +32,13 @@ function createYieldSingleton(): void {
     yieldSingleton = new Yield('1')
     yieldSingleton.totalVolumeDai = BigInt.fromI32(0).toBigDecimal()
     yieldSingleton.totalTradingFeesInDai = BigInt.fromI32(0).toBigDecimal()
+
+    yieldSingleton.collateralETH = BigInt.fromI32(0).toBigDecimal()
+    yieldSingleton.collateralChai = BigInt.fromI32(0).toBigDecimal()
+    yieldSingleton.totalFYDaiDebt = BigInt.fromI32(0).toBigDecimal()
+    yieldSingleton.totalFYDaiDebtFromETH = BigInt.fromI32(0).toBigDecimal()
+    yieldSingleton.totalFYDaiDebtFromChai = BigInt.fromI32(0).toBigDecimal()
+
     yieldSingleton.save()
   }
 }
