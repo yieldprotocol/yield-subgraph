@@ -61,7 +61,7 @@ function updateFYDai(maturity: FYDai, pool: Pool, timestamp: BigInt): void {
   if (maturity.maturity < timestamp) {
     fyDaiPriceInDaiWei = EIGHTEEN_ZEROS
   } else {
-    let buyPriceResult = pool.try_buyFYDaiPreview(BigInt.fromI32(10).pow(16))
+    let buyPriceResult = pool.try_sellFYDaiPreview(BigInt.fromI32(10).pow(16))
 
     if (buyPriceResult.reverted) {
       fyDaiPriceInDaiWei = BigInt.fromI32(0)
