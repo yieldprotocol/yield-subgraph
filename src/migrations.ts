@@ -53,6 +53,7 @@ function getFYDai(maturityTime: BigInt, address: Address): FYDai {
     maturity.name = maturityContract.name()
     maturity.symbol = maturityContract.symbol()
     maturity.maturity = maturityTime
+    maturity.apr = '0'
     maturity.totalSupply = BigInt.fromI32(0).toBigDecimal()
     maturity.totalVolumeDai = BigInt.fromI32(0).toBigDecimal()
     maturity.totalTradingFeesInDai = BigInt.fromI32(0).toBigDecimal()

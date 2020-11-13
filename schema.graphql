@@ -18,6 +18,9 @@ type FYDai @entity {
   maturity: BigInt!
   totalSupply: BigDecimal!
   pool: Bytes
+
+  apr: String!
+
   totalVolumeDai: BigDecimal!
   totalTradingFeesInDai: BigDecimal!
 

@@ -2,7 +2,7 @@ import { Address, BigInt, BigDecimal, log } from "@graphprotocol/graph-ts"
 import { Pool, Trade as TradeEvent, Liquidity } from "../generated/templates/Pool/Pool"
 import { YieldMathWrapper } from "../generated/templates/Pool/YieldMathWrapper"
 import { FYDai, Yield, Trade } from "../generated/schema"
-import { EIGHTEEN_DECIMALS, EIGHTEEN_ZEROS, ZERO } from './lib'
+import { EIGHTEEN_DECIMALS, EIGHTEEN_ZEROS, ZERO, bigIntToFloat } from './lib'
 
 let yieldMathAddress = Address.fromString('0xfcb06dce37a98081900fac325255d92dff94a107')
 let yieldMath = YieldMathWrapper.bind(yieldMathAddress)
@@ -10,6 +10,7 @@ let k = BigInt.fromI32(0)
 let g1 = BigInt.fromI32(0)
 let g2 = BigInt.fromI32(0)
 let gNoFee = BigInt.fromI32(2).pow(64)
+let SECONDS_PER_YEAR: f64 = 365 * 24 * 60 * 60
 
 function setupConstants(pool: Pool): void {
   if (k == BigInt.fromI32(0)) {
@@ -69,6 +70,30 @@ function updateFYDai(maturity: FYDai, pool: Pool, timestamp: BigInt): void {
     }
   }
   maturity.currentFYDaiPriceInDai = fyDaiPriceInDaiWei.toBigDecimal().div(EIGHTEEN_DECIMALS)
+
+  maturity.apr = yieldAPR(fyDaiPriceInDaiWei, maturity.maturity - timestamp)
+}
+
+// Adapted from https://github.com/yieldprotocol/fyDai-frontend/blob/master/src/hooks/mathHooks.ts#L219
+function yieldAPR(fyDaiPriceInDaiWei: BigInt, timeTillMaturity: BigInt): string {
+  let amount = EIGHTEEN_ZEROS
+
+  if (timeTillMaturity < ZERO) {
+    return '0'
+  }
+
+  let fyDaiPriceInDai: f64 = bigIntToFloat(fyDaiPriceInDaiWei, 18, 8)
+
+  let propOfYear = (timeTillMaturity.toI32() as f64) / SECONDS_PER_YEAR
+  let priceRatio = 1 / fyDaiPriceInDai
+  let powRatio = 1 / propOfYear
+  let apr = Math.pow(priceRatio, powRatio) - 1
+
+  if (apr > 0 && apr < 100) {
+    let aprPercent = apr * 100
+    return aprPercent.toString()
+  }
+  return '0'
 }
 
 export function handleTrade(event: TradeEvent): void {
