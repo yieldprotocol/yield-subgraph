@@ -35,6 +35,8 @@ function createYieldSingleton(): void {
 
     yieldSingleton.collateralETH = BigInt.fromI32(0).toBigDecimal()
     yieldSingleton.collateralChai = BigInt.fromI32(0).toBigDecimal()
+    yieldSingleton.totalPoolDai = ZERO.toBigDecimal()
+    yieldSingleton.totalPoolFYDai = ZERO.toBigDecimal()
     yieldSingleton.totalFYDaiDebt = BigInt.fromI32(0).toBigDecimal()
     yieldSingleton.totalFYDaiDebtFromETH = BigInt.fromI32(0).toBigDecimal()
     yieldSingleton.totalFYDaiDebtFromChai = BigInt.fromI32(0).toBigDecimal()

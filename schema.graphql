@@ -5,6 +5,10 @@ type Yield @entity {
 
   collateralETH: BigDecimal!
   collateralChai: BigDecimal!
+
+  totalPoolDai: BigDecimal!
+  totalPoolFYDai: BigDecimal!
+
   totalFYDaiDebt: BigDecimal!
   totalFYDaiDebtFromETH: BigDecimal!
   totalFYDaiDebtFromChai: BigDecimal!
@@ -42,7 +46,7 @@ type Vault @entity {
   totalFYDaiDebtFromETH: BigDecimal!
   totalFYDaiDebtFromChai: BigDecimal!
 
-  maturities: [VaultFYDai!]! @derivedFrom(field: "vault")
+  fyDais: [VaultFYDai!]! @derivedFrom(field: "vault")
 }
 
 type VaultFYDai @entity {
