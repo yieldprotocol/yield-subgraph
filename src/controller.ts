@@ -1,9 +1,9 @@
 import { store, ByteArray, BigInt } from '@graphprotocol/graph-ts'
 import { Controller, Posted, Borrowed } from "../generated/templates/Controller/Controller"
-import { Vault, VaultFYDai, Yield } from "../generated/schema"
-import { EIGHTEEN_DECIMALS, ZERO } from './lib'
+import { Vault, VaultFYDai, Yield, FYDai } from "../generated/schema"
+import { EIGHTEEN_DECIMALS, ZERO, ONE } from './lib'
 
-function getVault(address: string): Vault {
+function getVault(address: string, yieldSingleton: Yield): Vault {
   let account = Vault.load(address)
 
   if (!account) {
@@ -13,30 +13,36 @@ function getVault(address: string): Vault {
     account.totalFYDaiDebt = BigInt.fromI32(0).toBigDecimal()
     account.totalFYDaiDebtFromETH = BigInt.fromI32(0).toBigDecimal()
     account.totalFYDaiDebtFromChai = BigInt.fromI32(0).toBigDecimal()
+    account.numFYDais = ZERO
+
+    yieldSingleton.numVaults += ONE
   }
 
   return account!
 }
 
-function getVaultFYDai(vault: string, maturity: string): VaultFYDai {
-  let id = vault + '-' + maturity
+function getVaultFYDai(vault: Vault, fyDai: FYDai): VaultFYDai {
+  let id = vault.id + '-' + fyDai.id
   let vaultMaturity = VaultFYDai.load(id)
 
   if (!vaultMaturity) {
     vaultMaturity = new VaultFYDai(id)
-    vaultMaturity.vault = vault
-    vaultMaturity.fyDai = maturity
+    vaultMaturity.vault = vault.id
+    vaultMaturity.fyDai = fyDai.id
     vaultMaturity.totalFYDaiDebt = ZERO.toBigDecimal()
     vaultMaturity.fyDaiDebtFromETH = ZERO.toBigDecimal()
     vaultMaturity.fyDaiDebtFromChai = ZERO.toBigDecimal()
+
+    vault.numFYDais += ONE
+    fyDai.numVaults += ONE
   }
 
   return vaultMaturity!
 }
 
 export function handlePosted(event: Posted): void {
-  let yieldSingleton = Yield.load('1')
-  let account = getVault(event.params.user.toHex())
+  let yieldSingleton = Yield.load('1')!
+  let account = getVault(event.params.user.toHex(), yieldSingleton)
 
   let controllerContract = Controller.bind(event.address)
 
@@ -60,9 +66,10 @@ export function handlePosted(event: Posted): void {
 }
 
 export function handleBorrowed(event: Borrowed): void {
-  let yieldSingleton = Yield.load('1')
-  let account = getVault(event.params.user.toHex())
-  let vaultMaturity = getVaultFYDai(event.params.user.toHex(), event.params.maturity.toString())
+  let yieldSingleton = Yield.load('1')!
+  let account = getVault(event.params.user.toHex(), yieldSingleton)
+  let fyDai = FYDai.load(event.params.maturity.toString())!
+  let vaultMaturity = getVaultFYDai(account, fyDai)
 
   let controllerContract = Controller.bind(event.address)
 
@@ -89,7 +96,23 @@ export function handleBorrowed(event: Borrowed): void {
     .divDecimal(EIGHTEEN_DECIMALS)
   vaultMaturity.totalFYDaiDebt = vaultMaturity.fyDaiDebtFromETH + vaultMaturity.fyDaiDebtFromChai
 
-  account.save()
-  vaultMaturity.save()
+  // If a vaultMaturity has no outstanding debt, remove it
+  if (vaultMaturity.totalFYDaiDebt == ZERO.toBigDecimal()) {
+    store.remove('VaultFYDai', vaultMaturity.id)
+    account.numFYDais -= ONE
+    fyDai.numVaults -= ONE
+  } else {
+    vaultMaturity.save()
+  }
+
+  // If an vault has no loans, remove it
+  if (account.numFYDais == ZERO) {
+    store.remove('Vault', account.id)
+    yieldSingleton.numVaults -= ONE
+  } else {
+    account.save()
+  }
+
   yieldSingleton.save()
+  fyDai.save()
 }

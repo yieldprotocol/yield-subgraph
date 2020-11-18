@@ -2,6 +2,7 @@ type Yield @entity {
   id: ID!
   totalTradingFeesInDai: BigDecimal!
   totalVolumeDai: BigDecimal!
+  numVaults: BigInt!
 
   collateralETH: BigDecimal!
   collateralChai: BigDecimal!
@@ -35,6 +36,7 @@ type FYDai @entity {
   poolFYDaiReservesWei: BigInt!
   poolDaiReservesWei: BigInt!
 
+  numVaults: BigInt!
   vaults: [VaultFYDai!]! @derivedFrom(field: "fyDai")
 }
 
@@ -46,6 +48,7 @@ type Vault @entity {
   totalFYDaiDebtFromETH: BigDecimal!
   totalFYDaiDebtFromChai: BigDecimal!
 
+  numFYDais: BigInt!
   fyDais: [VaultFYDai!]! @derivedFrom(field: "vault")
 }
 
