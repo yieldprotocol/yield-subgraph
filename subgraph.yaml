@@ -83,6 +83,8 @@ templates:
           file: ./abis/Controller.json
         - name: MakerPot
           file: ./abis/MakerPot.json
+        - name: MakerMedianizer
+          file: ./abis/MakerMedianizer.json
       eventHandlers:
         - event: Posted(indexed bytes32,indexed address,int256)
           handler: handlePosted

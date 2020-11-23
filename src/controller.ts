@@ -1,11 +1,15 @@
-import { Address, store, ByteArray, BigInt, BigDecimal } from '@graphprotocol/graph-ts'
+import { Address, store, ByteArray, Bytes, BigInt, BigDecimal } from '@graphprotocol/graph-ts'
 import { Controller, Posted, Borrowed } from "../generated/templates/Controller/Controller"
 import { MakerPot } from "../generated/templates/Controller/MakerPot"
+import { MakerMedianizer } from "../generated/templates/Controller/MakerMedianizer"
 import { Vault, VaultFYDai, Yield, FYDai } from "../generated/schema"
 import { EIGHTEEN_DECIMALS, ZERO, ONE } from './lib'
+import { log } from '@graphprotocol/graph-ts'
 
 let potAddress = Address.fromString('0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7')
 let pot = MakerPot.bind(potAddress)
+let medianizerAddress = Address.fromString('0x729D19f657BD0614b4985Cf1D82531c67569197B')
+let medianizer = MakerMedianizer.bind(medianizerAddress)
 
 function getVault(address: string, yieldSingleton: Yield): Vault {
   let account = Vault.load(address)
@@ -45,8 +49,14 @@ function getVaultFYDai(vault: Vault, fyDai: FYDai): VaultFYDai {
   return vaultMaturity!
 }
 
+let TWENTY_SEVEN_DECIMALS = BigInt.fromI32(10).pow(27).toBigDecimal()
 function getChaiPrice(): BigDecimal {
-  return pot.chi().divDecimal(EIGHTEEN_DECIMALS)
+  return pot.chi().divDecimal(TWENTY_SEVEN_DECIMALS)
+}
+
+function getETHPrice(): BigDecimal {
+  let priceInWei = BigInt.fromUnsignedBytes(medianizer.read().reverse() as Bytes)
+  return priceInWei.divDecimal(EIGHTEEN_DECIMALS)
 }
 
 export function handlePosted(event: Posted): void {
@@ -63,6 +73,9 @@ export function handlePosted(event: Posted): void {
   if (event.params.collateral.toString() == 'ETH-A') {
     account.collateralETH = collateralBalance
     yieldSingleton.collateralETH += event.params.amount.divDecimal(EIGHTEEN_DECIMALS)
+
+    yieldSingleton.ethPrice = getETHPrice()
+    yieldSingleton.collateralETHInUSD = yieldSingleton.collateralETH * yieldSingleton.ethPrice
   }
 
   if (event.params.collateral.toString() == 'CHAI') {

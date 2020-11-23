@@ -35,6 +35,7 @@ function createYieldSingleton(): void {
     yieldSingleton.numVaults = ZERO
 
     yieldSingleton.collateralETH = ZERO.toBigDecimal()
+    yieldSingleton.collateralETHInUSD = ZERO.toBigDecimal()
     yieldSingleton.collateralChai = ZERO.toBigDecimal()
     yieldSingleton.collateralChaiInDai = ZERO.toBigDecimal()
     yieldSingleton.totalPoolDai = ZERO.toBigDecimal()
@@ -43,6 +44,7 @@ function createYieldSingleton(): void {
     yieldSingleton.totalFYDaiDebt = BigInt.fromI32(0).toBigDecimal()
     yieldSingleton.totalFYDaiDebtFromETH = BigInt.fromI32(0).toBigDecimal()
     yieldSingleton.totalFYDaiDebtFromChai = BigInt.fromI32(0).toBigDecimal()
+    yieldSingleton.ethPrice = ZERO.toBigDecimal()
 
     yieldSingleton.save()
   }
