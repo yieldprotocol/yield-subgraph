@@ -34,8 +34,9 @@ function createYieldSingleton(): void {
     yieldSingleton.totalTradingFeesInDai = BigInt.fromI32(0).toBigDecimal()
     yieldSingleton.numVaults = ZERO
 
-    yieldSingleton.collateralETH = BigInt.fromI32(0).toBigDecimal()
-    yieldSingleton.collateralChai = BigInt.fromI32(0).toBigDecimal()
+    yieldSingleton.collateralETH = ZERO.toBigDecimal()
+    yieldSingleton.collateralChai = ZERO.toBigDecimal()
+    yieldSingleton.collateralChaiInDai = ZERO.toBigDecimal()
     yieldSingleton.totalPoolDai = ZERO.toBigDecimal()
     yieldSingleton.totalPoolFYDai = ZERO.toBigDecimal()
     yieldSingleton.poolTLVInDai = ZERO.toBigDecimal()

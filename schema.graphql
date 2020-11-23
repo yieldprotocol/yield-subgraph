@@ -6,6 +6,7 @@ type Yield @entity {
 
   collateralETH: BigDecimal!
   collateralChai: BigDecimal!
+  collateralChaiInDai: BigDecimal!
 
   totalPoolDai: BigDecimal!
   totalPoolFYDai: BigDecimal!
@@ -47,6 +48,8 @@ type Vault @entity {
   id: ID!
   collateralETH: BigDecimal!
   collateralChai: BigDecimal!
+  collateralChaiInDai: BigDecimal!
+
   totalFYDaiDebt: BigDecimal!
   totalFYDaiDebtFromETH: BigDecimal!
   totalFYDaiDebtFromChai: BigDecimal!

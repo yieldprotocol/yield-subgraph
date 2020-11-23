@@ -1,15 +1,20 @@
-import { store, ByteArray, BigInt } from '@graphprotocol/graph-ts'
+import { Address, store, ByteArray, BigInt, BigDecimal } from '@graphprotocol/graph-ts'
 import { Controller, Posted, Borrowed } from "../generated/templates/Controller/Controller"
+import { MakerPot } from "../generated/templates/Controller/MakerPot"
 import { Vault, VaultFYDai, Yield, FYDai } from "../generated/schema"
 import { EIGHTEEN_DECIMALS, ZERO, ONE } from './lib'
+
+let potAddress = Address.fromString('0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7')
+let pot = MakerPot.bind(potAddress)
 
 function getVault(address: string, yieldSingleton: Yield): Vault {
   let account = Vault.load(address)
 
   if (!account) {
     account = new Vault(address)
-    account.collateralETH = BigInt.fromI32(0).toBigDecimal()
-    account.collateralChai = BigInt.fromI32(0).toBigDecimal()
+    account.collateralETH = ZERO.toBigDecimal()
+    account.collateralChai = ZERO.toBigDecimal()
+    account.collateralChaiInDai = ZERO.toBigDecimal()
     account.totalFYDaiDebt = BigInt.fromI32(0).toBigDecimal()
     account.totalFYDaiDebtFromETH = BigInt.fromI32(0).toBigDecimal()
     account.totalFYDaiDebtFromChai = BigInt.fromI32(0).toBigDecimal()
@@ -40,6 +45,10 @@ function getVaultFYDai(vault: Vault, fyDai: FYDai): VaultFYDai {
   return vaultMaturity!
 }
 
+function getChaiPrice(): BigDecimal {
+  return pot.chi().divDecimal(EIGHTEEN_DECIMALS)
+}
+
 export function handlePosted(event: Posted): void {
   let yieldSingleton = Yield.load('1')!
   let account = getVault(event.params.user.toHex(), yieldSingleton)
@@ -57,8 +66,13 @@ export function handlePosted(event: Posted): void {
   }
 
   if (event.params.collateral.toString() == 'CHAI') {
+    let chaiPriceInDai = getChaiPrice()
+
     account.collateralChai = collateralBalance
+    account.collateralChaiInDai = account.collateralChaiInDai * chaiPriceInDai
+
     yieldSingleton.collateralChai += event.params.amount.divDecimal(EIGHTEEN_DECIMALS)
+    yieldSingleton.collateralChaiInDai = yieldSingleton.collateralChai * chaiPriceInDai
   }
 
   account.save()
