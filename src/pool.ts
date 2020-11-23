@@ -1,47 +1,52 @@
 import { Address, BigInt, BigDecimal, log } from "@graphprotocol/graph-ts"
 import { Pool, Trade as TradeEvent, Liquidity } from "../generated/templates/Pool/Pool"
-import { YieldMathWrapper } from "../generated/templates/Pool/YieldMathWrapper"
 import { FYDai, Yield, Trade } from "../generated/schema"
 import { EIGHTEEN_DECIMALS, EIGHTEEN_ZEROS, ZERO, bigIntToFloat } from './lib'
 
-let yieldMathAddress = Address.fromString('0xfcb06dce37a98081900fac325255d92dff94a107')
-let yieldMath = YieldMathWrapper.bind(yieldMathAddress)
-let k = BigInt.fromI32(0)
-let g1 = BigInt.fromI32(0)
-let g2 = BigInt.fromI32(0)
-let gNoFee = BigInt.fromI32(2).pow(64)
 let SECONDS_PER_YEAR: f64 = 365 * 24 * 60 * 60
+let k = (1 as f64) / (4 * 365 * 24 * 60 * 60 as f64) // 1 / seconds in four years
+let g1 = 950 as f64 / 1000 as f64
+let g2 = 1000 as f64 / 950 as f64
+let gNoFee: f64 = 1
 
-function setupConstants(pool: Pool): void {
-  if (k == BigInt.fromI32(0)) {
-    k = pool.k()
-    g1 = pool.g1()
-    g2 = pool.g2()
-  }
-}
+function buyFYDai(fyDaiReserves: f64, daiReserves: f64, timeTillMaturity: i32, fyDai: f64, g: f64): f64 {
+  let t = k * timeTillMaturity
+  let a = 1 as f64 - (g * t)
+  let Za = Math.pow(daiReserves, a)
+  let Ya = Math.pow(fyDaiReserves, a)
+  let Yxa = Math.pow(fyDaiReserves - fyDai, a)
+  let y = Math.pow((Za + Ya) - Yxa, (1 as f64 / a)) - daiReserves
 
-function yieldMathContractExists(): boolean {
-  let result = yieldMath.try_daiInForFYDaiOut(ZERO, ZERO, ZERO, ZERO, ZERO, ZERO)
-  return !result.reverted
-}
+  return y
+};
+
+function sellFYDai(fyDaiReserves: f64, daiReserves: f64, timeTillMaturity: i32, fyDai: f64, g: f64): f64 {
+  let t = k * timeTillMaturity
+  let a = 1 as f64 - (g * t)
+  let Za = Math.pow(daiReserves, a)
+  let Ya = Math.pow(fyDaiReserves, a)
+  let Yxa = Math.pow(fyDaiReserves + fyDai, a)
+  let y = daiReserves - Math.pow(Za + (Ya - Yxa), (1 as f64 / a))
+
+  return y
+};
 
 function getFee(fyDaiReserves: BigInt, daiReserves: BigInt, timeTillMaturity: BigInt, fyDai: BigInt): BigDecimal {
-  if (!yieldMathContractExists()) {
-    log.warning("Can't find YieldMath, returning fee of 0", [])
-    return ZERO.toBigDecimal()
-  }
+  let fyDaiReservesDecimal = bigIntToFloat(fyDaiReserves, 18, 2)
+  let daiReservesDecimal = bigIntToFloat(daiReserves, 18, 2)
+  let fyDaiDecimal = bigIntToFloat(fyDai, 18, 4)
 
-  let fee = ZERO
+  let fee: f64 = 0
   if (fyDai >= ZERO) {
-    let daiWithFee = yieldMath.daiInForFYDaiOut(daiReserves, fyDaiReserves, fyDai, timeTillMaturity, k, g1)
-    let daiWithoutFee = yieldMath.daiInForFYDaiOut(daiReserves, fyDaiReserves, fyDai, timeTillMaturity, k, gNoFee)
-    fee = daiWithFee.value1 - daiWithoutFee.value1
+    let daiWithFee = buyFYDai(fyDaiReservesDecimal, daiReservesDecimal, timeTillMaturity.toI32(), fyDaiDecimal, g1)
+    let daiWithoutFee = buyFYDai(fyDaiReservesDecimal, daiReservesDecimal, timeTillMaturity.toI32(), fyDaiDecimal, gNoFee)
+    fee = daiWithFee - daiWithoutFee
   } else {
-    let daiWithFee = yieldMath.daiOutForFYDaiIn(daiReserves, fyDaiReserves, -fyDai, timeTillMaturity, k, g2)
-    let daiWithoutFee = yieldMath.daiOutForFYDaiIn(daiReserves, fyDaiReserves, -fyDai, timeTillMaturity, k, gNoFee)
-    fee = daiWithoutFee.value1 - daiWithFee.value1
+    let daiWithFee = sellFYDai(fyDaiReservesDecimal, daiReservesDecimal, timeTillMaturity.toI32(), -fyDaiDecimal, g2)
+    let daiWithoutFee = sellFYDai(fyDaiReservesDecimal, daiReservesDecimal, timeTillMaturity.toI32(), -fyDaiDecimal, gNoFee)
+    fee = daiWithoutFee - daiWithFee
   }
-  return fee.divDecimal(EIGHTEEN_DECIMALS)
+  return BigDecimal.fromString(fee.toString())
 }
 
 
@@ -120,7 +125,6 @@ export function handleTrade(event: TradeEvent): void {
   trade.amountDai = event.params.daiTokens.divDecimal(EIGHTEEN_DECIMALS)
   trade.amountFYDai = event.params.fyDaiTokens.divDecimal(EIGHTEEN_DECIMALS)
 
-  setupConstants(pool)
   let timeTillMaturity = maturity.maturity - event.block.timestamp
   trade.feeInDai = getFee(maturity.poolFYDaiReservesWei, maturity.poolDaiReservesWei, timeTillMaturity, event.params.fyDaiTokens)
 

@@ -61,8 +61,6 @@ templates:
       abis:
         - name: Pool
           file: ./abis/Pool.json
-        - name: YieldMathWrapper
-          file: ./abis/YieldMathWrapper.json
       eventHandlers:
         - event: Trade(uint256,indexed address,indexed address,int256,int256)
           handler: handleTrade
