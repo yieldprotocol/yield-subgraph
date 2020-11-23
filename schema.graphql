@@ -9,6 +9,7 @@ type Yield @entity {
 
   totalPoolDai: BigDecimal!
   totalPoolFYDai: BigDecimal!
+  poolTLVInDai: BigDecimal!
 
   totalFYDaiDebt: BigDecimal!
   totalFYDaiDebtFromETH: BigDecimal!
@@ -33,6 +34,8 @@ type FYDai @entity {
 
   poolFYDaiReserves: BigDecimal!
   poolDaiReserves: BigDecimal!
+  poolFYDaiValueInDai: BigDecimal!
+
   poolFYDaiReservesWei: BigInt!
   poolDaiReservesWei: BigInt!
 

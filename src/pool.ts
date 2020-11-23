@@ -51,7 +51,10 @@ function getFYDaiFromPool(poolAddress: Address): FYDai {
   return maturity!
 }
 
-function updateFYDai(maturity: FYDai, pool: Pool, timestamp: BigInt): void {
+function updateFYDai(maturity: FYDai, pool: Pool, yieldSingleton: Yield, timestamp: BigInt): void {
+  // Subtract the previous pool TLV. We'll add the updated value back after recalculating it
+  yieldSingleton.poolTLVInDai -= (maturity.poolDaiReserves + maturity.poolFYDaiValueInDai)
+
   maturity.poolFYDaiReservesWei = pool.getFYDaiReserves()
   maturity.poolFYDaiReserves = maturity.poolFYDaiReservesWei.toBigDecimal().div(EIGHTEEN_DECIMALS)
   maturity.poolDaiReservesWei = pool.getDaiReserves()
@@ -70,6 +73,9 @@ function updateFYDai(maturity: FYDai, pool: Pool, timestamp: BigInt): void {
     }
   }
   maturity.currentFYDaiPriceInDai = fyDaiPriceInDaiWei.toBigDecimal().div(EIGHTEEN_DECIMALS)
+
+  maturity.poolFYDaiValueInDai = maturity.poolFYDaiReserves * maturity.currentFYDaiPriceInDai
+  yieldSingleton.poolTLVInDai += (maturity.poolDaiReserves + maturity.poolFYDaiValueInDai)
 
   maturity.apr = yieldAPR(fyDaiPriceInDaiWei, maturity.maturity - timestamp)
 }
@@ -97,6 +103,7 @@ function yieldAPR(fyDaiPriceInDaiWei: BigInt, timeTillMaturity: BigInt): string 
 }
 
 export function handleTrade(event: TradeEvent): void {
+  let yieldSingleton = Yield.load('1')!
   let pool = Pool.bind(event.address)
   let maturity = getFYDaiFromPool(event.address)
 
@@ -118,7 +125,6 @@ export function handleTrade(event: TradeEvent): void {
   trade.feeInDai = getFee(maturity.poolFYDaiReservesWei, maturity.poolDaiReservesWei, timeTillMaturity, event.params.fyDaiTokens)
 
   // Update global stats
-  let yieldSingleton = Yield.load('1')
   yieldSingleton.totalVolumeDai += daiVolume
   yieldSingleton.totalTradingFeesInDai += trade.feeInDai
   yieldSingleton.totalPoolDai -= event.params.daiTokens.divDecimal(EIGHTEEN_DECIMALS)
@@ -127,7 +133,7 @@ export function handleTrade(event: TradeEvent): void {
   // Update maturity
   maturity.totalVolumeDai += daiVolume
   maturity.totalTradingFeesInDai += trade.feeInDai
-  updateFYDai(maturity, pool, event.block.timestamp)
+  updateFYDai(maturity, pool, yieldSingleton, event.block.timestamp)
 
   maturity.save()
   yieldSingleton.save()
@@ -135,12 +141,12 @@ export function handleTrade(event: TradeEvent): void {
 }
 
 export function handleLiquidity(event: Liquidity): void {
+  let yieldSingleton = Yield.load('1')!
   let maturity = getFYDaiFromPool(event.address)
   let pool = Pool.bind(event.address)
 
-  updateFYDai(maturity, pool, event.block.timestamp)
+  updateFYDai(maturity, pool, yieldSingleton, event.block.timestamp)
 
-  let yieldSingleton = Yield.load('1')
   yieldSingleton.totalPoolDai -= event.params.daiTokens.divDecimal(EIGHTEEN_DECIMALS)
   yieldSingleton.totalPoolFYDai -= event.params.fyDaiTokens.divDecimal(EIGHTEEN_DECIMALS)
 

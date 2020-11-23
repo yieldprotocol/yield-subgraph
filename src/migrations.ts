@@ -38,6 +38,7 @@ function createYieldSingleton(): void {
     yieldSingleton.collateralChai = BigInt.fromI32(0).toBigDecimal()
     yieldSingleton.totalPoolDai = ZERO.toBigDecimal()
     yieldSingleton.totalPoolFYDai = ZERO.toBigDecimal()
+    yieldSingleton.poolTLVInDai = ZERO.toBigDecimal()
     yieldSingleton.totalFYDaiDebt = BigInt.fromI32(0).toBigDecimal()
     yieldSingleton.totalFYDaiDebtFromETH = BigInt.fromI32(0).toBigDecimal()
     yieldSingleton.totalFYDaiDebtFromChai = BigInt.fromI32(0).toBigDecimal()
@@ -61,6 +62,7 @@ function getFYDai(maturityTime: BigInt, address: Address): FYDai {
     maturity.totalVolumeDai = BigInt.fromI32(0).toBigDecimal()
     maturity.totalTradingFeesInDai = BigInt.fromI32(0).toBigDecimal()
     maturity.poolFYDaiReserves = BigInt.fromI32(0).toBigDecimal()
+    maturity.poolFYDaiValueInDai = ZERO.toBigDecimal()
     maturity.poolDaiReserves = BigInt.fromI32(0).toBigDecimal()
     maturity.poolFYDaiReservesWei = ZERO
     maturity.poolDaiReservesWei = ZERO
