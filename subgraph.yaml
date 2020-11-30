@@ -60,7 +60,7 @@ templates:
       file: ./src/pool.ts
       entities:
         - Yield
-        - Pool
+        - FYDai
         - Trade
         - Liquidity
       abis:
@@ -84,7 +84,10 @@ templates:
       language: wasm/assemblyscript
       file: ./src/controller.ts
       entities:
+        - Yield
         - Account
+        - FYDai
+        - Borrow
       abis:
         - name: Controller
           file: ./abis/Controller.json

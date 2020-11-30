@@ -70,6 +70,16 @@ type VaultFYDai @entity {
   fyDaiDebtFromChai: BigDecimal!
 }
 
+type Borrow @entity {
+  id: ID!
+  timestamp: BigInt!
+  fyDai: FYDai!
+  from: Bytes!
+
+  amountFYDai: BigDecimal!
+  collateral: String!
+}
+
 type Trade @entity {
   id: ID!
   timestamp: BigInt!

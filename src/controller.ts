@@ -2,7 +2,7 @@ import { Address, store, ByteArray, Bytes, BigInt, BigDecimal } from '@graphprot
 import { Controller, Posted, Borrowed } from "../generated/templates/Controller/Controller"
 import { MakerPot } from "../generated/templates/Controller/MakerPot"
 import { MakerMedianizer } from "../generated/templates/Controller/MakerMedianizer"
-import { Vault, VaultFYDai, Yield, FYDai } from "../generated/schema"
+import { Vault, VaultFYDai, Yield, FYDai, Borrow } from "../generated/schema"
 import { EIGHTEEN_DECIMALS, ZERO, ONE } from './lib'
 import { log } from '@graphprotocol/graph-ts'
 
@@ -102,6 +102,13 @@ export function handleBorrowed(event: Borrowed): void {
 
   let borrowAmount = event.params.amount.divDecimal(EIGHTEEN_DECIMALS)
 
+  let borrow = new Borrow(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
+  borrow.timestamp = event.block.timestamp
+  borrow.fyDai = event.params.maturity.toString()
+  borrow.from = event.params.user
+  borrow.amountFYDai = borrowAmount
+  borrow.collateral = event.params.collateral.toString()
+
   account.totalFYDaiDebt += borrowAmount
   yieldSingleton.totalFYDaiDebt += borrowAmount
 
@@ -142,4 +149,5 @@ export function handleBorrowed(event: Borrowed): void {
 
   yieldSingleton.save()
   fyDai.save()
+  borrow.save()
 }
