@@ -61,6 +61,8 @@ templates:
       abis:
         - name: Pool
           file: ./abis/Pool.json
+        - name: FYDai
+          file: ./abis/FYDai.json
       eventHandlers:
         - event: Trade(uint256,indexed address,indexed address,int256,int256)
           handler: handleTrade

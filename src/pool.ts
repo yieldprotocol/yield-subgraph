@@ -1,4 +1,5 @@
 import { Address, BigInt, BigDecimal, log } from "@graphprotocol/graph-ts"
+import { FYDai as FYDaiContract } from "../generated/templates/Pool/FYDai"
 import { Pool, Trade as TradeEvent, Liquidity } from "../generated/templates/Pool/Pool"
 import { FYDai, Yield, Trade } from "../generated/schema"
 import { EIGHTEEN_DECIMALS, EIGHTEEN_ZEROS, ZERO, bigIntToFloat } from './lib'
@@ -60,7 +61,9 @@ function updateFYDai(maturity: FYDai, pool: Pool, yieldSingleton: Yield, timesta
   // Subtract the previous pool TLV. We'll add the updated value back after recalculating it
   yieldSingleton.poolTLVInDai -= (maturity.poolDaiReserves + maturity.poolFYDaiValueInDai)
 
-  maturity.poolFYDaiReservesWei = pool.getFYDaiReserves()
+  let fyDaiContract = FYDaiContract.bind(pool.fyDai())
+
+  maturity.poolFYDaiReservesWei = fyDaiContract.balanceOf(pool._address)
   maturity.poolFYDaiReserves = maturity.poolFYDaiReservesWei.toBigDecimal().div(EIGHTEEN_DECIMALS)
   maturity.poolDaiReservesWei = pool.getDaiReserves()
   maturity.poolDaiReserves = maturity.poolDaiReservesWei.toBigDecimal().div(EIGHTEEN_DECIMALS)
