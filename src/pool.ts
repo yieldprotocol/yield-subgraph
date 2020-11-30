@@ -65,6 +65,7 @@ function updateFYDai(maturity: FYDai, pool: Pool, yieldSingleton: Yield, timesta
 
   maturity.poolFYDaiReservesWei = fyDaiContract.balanceOf(pool._address)
   maturity.poolFYDaiReserves = maturity.poolFYDaiReservesWei.toBigDecimal().div(EIGHTEEN_DECIMALS)
+  maturity.poolFYDaiVirtualReservesWei = pool.getFYDaiReserves()
   maturity.poolDaiReservesWei = pool.getDaiReserves()
   maturity.poolDaiReserves = maturity.poolDaiReservesWei.toBigDecimal().div(EIGHTEEN_DECIMALS)
 
@@ -130,7 +131,7 @@ export function handleTrade(event: TradeEvent): void {
   trade.amountFYDai = event.params.fyDaiTokens.divDecimal(EIGHTEEN_DECIMALS)
 
   let timeTillMaturity = maturity.maturity - event.block.timestamp
-  trade.feeInDai = getFee(maturity.poolFYDaiReservesWei, maturity.poolDaiReservesWei, timeTillMaturity, event.params.fyDaiTokens)
+  trade.feeInDai = getFee(maturity.poolFYDaiVirtualReservesWei, maturity.poolDaiReservesWei, timeTillMaturity, event.params.fyDaiTokens)
 
   // Update global stats
   yieldSingleton.totalVolumeDai += daiVolume

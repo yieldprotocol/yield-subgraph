@@ -41,6 +41,7 @@ type FYDai @entity {
   poolFYDaiValueInDai: BigDecimal!
 
   poolFYDaiReservesWei: BigInt!
+  poolFYDaiVirtualReservesWei: BigInt!
   poolDaiReservesWei: BigInt!
 
   numVaults: BigInt!

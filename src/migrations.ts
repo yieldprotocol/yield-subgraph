@@ -68,6 +68,7 @@ function getFYDai(maturityTime: BigInt, address: Address): FYDai {
     maturity.poolFYDaiValueInDai = ZERO.toBigDecimal()
     maturity.poolDaiReserves = BigInt.fromI32(0).toBigDecimal()
     maturity.poolFYDaiReservesWei = ZERO
+    maturity.poolFYDaiVirtualReservesWei = ZERO
     maturity.poolDaiReservesWei = ZERO
     maturity.currentFYDaiPriceInDai = BigInt.fromI32(0).toBigDecimal()
     maturity.numVaults = ZERO
