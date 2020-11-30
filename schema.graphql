@@ -72,6 +72,7 @@ type VaultFYDai @entity {
 
 type Trade @entity {
   id: ID!
+  timestamp: BigInt!
   fyDai: FYDai!
   from: Bytes!
   to: Bytes!
@@ -80,4 +81,15 @@ type Trade @entity {
   amountFYDai: BigDecimal!
 
   feeInDai: BigDecimal!
+}
+
+type Liquidity @entity {
+  id: ID!
+  timestamp: BigInt!
+  fyDai: FYDai!
+  from: Bytes!
+  to: Bytes!
+
+  amountDai: BigDecimal!
+  amountFYDai: BigDecimal!
 }

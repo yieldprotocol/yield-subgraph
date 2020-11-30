@@ -14,7 +14,9 @@ dataSources:
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
-        - Maturity
+        - Yield
+        - FYDai
+        - Pool
       abis:
         - name: Migrations
           file: ./abis/Migrations.json
@@ -39,7 +41,7 @@ templates:
       language: wasm/assemblyscript
       file: ./src/fydai.ts
       entities:
-        - Maturity
+        - FYDai
       abis:
         - name: FYDai
           file: ./abis/FYDai.json
@@ -57,7 +59,10 @@ templates:
       language: wasm/assemblyscript
       file: ./src/pool.ts
       entities:
+        - Yield
         - Pool
+        - Trade
+        - Liquidity
       abis:
         - name: Pool
           file: ./abis/Pool.json

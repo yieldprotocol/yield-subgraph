@@ -1,7 +1,7 @@
 import { Address, BigInt, BigDecimal, log } from "@graphprotocol/graph-ts"
 import { FYDai as FYDaiContract } from "../generated/templates/Pool/FYDai"
-import { Pool, Trade as TradeEvent, Liquidity } from "../generated/templates/Pool/Pool"
-import { FYDai, Yield, Trade } from "../generated/schema"
+import { Pool, Trade as TradeEvent, Liquidity as LiquidityEvent } from "../generated/templates/Pool/Pool"
+import { FYDai, Yield, Trade, Liquidity } from "../generated/schema"
 import { EIGHTEEN_DECIMALS, EIGHTEEN_ZEROS, ZERO, bigIntToFloat } from './lib'
 
 let SECONDS_PER_YEAR: f64 = 365 * 24 * 60 * 60
@@ -122,6 +122,7 @@ export function handleTrade(event: TradeEvent): void {
 
   // Create Trade entity
   let trade = new Trade(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
+  trade.timestamp = event.block.timestamp
   trade.fyDai = maturity.id
   trade.from = event.params.from
   trade.to = event.params.to
@@ -147,16 +148,26 @@ export function handleTrade(event: TradeEvent): void {
   trade.save()
 }
 
-export function handleLiquidity(event: Liquidity): void {
+export function handleLiquidity(event: LiquidityEvent): void {
   let yieldSingleton = Yield.load('1')!
-  let maturity = getFYDaiFromPool(event.address)
+  let fyDai = getFYDaiFromPool(event.address)
   let pool = Pool.bind(event.address)
 
-  updateFYDai(maturity, pool, yieldSingleton, event.block.timestamp)
+  // Create Liquidity entity
+  let liquidity = new Liquidity(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
+  liquidity.timestamp = event.block.timestamp
+  liquidity.fyDai = fyDai.id
+  liquidity.from = event.params.from
+  liquidity.to = event.params.to
+  liquidity.amountDai = event.params.daiTokens.divDecimal(EIGHTEEN_DECIMALS)
+  liquidity.amountFYDai = event.params.fyDaiTokens.divDecimal(EIGHTEEN_DECIMALS)
+
+  updateFYDai(fyDai, pool, yieldSingleton, event.block.timestamp)
 
   yieldSingleton.totalPoolDai -= event.params.daiTokens.divDecimal(EIGHTEEN_DECIMALS)
   yieldSingleton.totalPoolFYDai -= event.params.fyDaiTokens.divDecimal(EIGHTEEN_DECIMALS)
 
-  maturity.save()
+  fyDai.save()
+  liquidity.save()
   yieldSingleton.save()
 }
