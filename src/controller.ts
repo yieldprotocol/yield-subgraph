@@ -1,8 +1,8 @@
 import { Address, store, ByteArray, Bytes, BigInt, BigDecimal } from '@graphprotocol/graph-ts'
-import { Controller, Posted, Borrowed } from "../generated/templates/Controller/Controller"
+import { Controller, Posted as PostedEvent, Borrowed } from "../generated/templates/Controller/Controller"
 import { MakerPot } from "../generated/templates/Controller/MakerPot"
 import { MakerMedianizer } from "../generated/templates/Controller/MakerMedianizer"
-import { Vault, VaultFYDai, Yield, FYDai, Borrow } from "../generated/schema"
+import { Vault, VaultFYDai, Yield, FYDai, Borrow, Posted } from "../generated/schema"
 import { EIGHTEEN_DECIMALS, ZERO, ONE } from './lib'
 import { log } from '@graphprotocol/graph-ts'
 
@@ -59,11 +59,18 @@ function getETHPrice(): BigDecimal {
   return priceInWei.divDecimal(EIGHTEEN_DECIMALS)
 }
 
-export function handlePosted(event: Posted): void {
+export function handlePosted(event: PostedEvent): void {
   let yieldSingleton = Yield.load('1')!
   let account = getVault(event.params.user.toHex(), yieldSingleton)
-
   let controllerContract = Controller.bind(event.address)
+
+  let amount = event.params.amount.divDecimal(EIGHTEEN_DECIMALS)
+
+  let posted = new Posted(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
+  posted.timestamp = event.block.timestamp
+  posted.from = event.params.user
+  posted.amount = amount
+  posted.collateral = event.params.collateral.toString()
 
   let collateralBalance = controllerContract
     .posted(event.params.collateral, event.params.user)
@@ -72,7 +79,7 @@ export function handlePosted(event: Posted): void {
 
   if (event.params.collateral.toString() == 'ETH-A') {
     account.collateralETH = collateralBalance
-    yieldSingleton.collateralETH += event.params.amount.divDecimal(EIGHTEEN_DECIMALS)
+    yieldSingleton.collateralETH += amount
 
     yieldSingleton.ethPrice = getETHPrice()
     yieldSingleton.collateralETHInUSD = yieldSingleton.collateralETH * yieldSingleton.ethPrice
@@ -84,12 +91,13 @@ export function handlePosted(event: Posted): void {
     account.collateralChai = collateralBalance
     account.collateralChaiInDai = account.collateralChaiInDai * chaiPriceInDai
 
-    yieldSingleton.collateralChai += event.params.amount.divDecimal(EIGHTEEN_DECIMALS)
+    yieldSingleton.collateralChai += amount
     yieldSingleton.collateralChaiInDai = yieldSingleton.collateralChai * chaiPriceInDai
   }
 
   account.save()
   yieldSingleton.save()
+  posted.save()
 }
 
 export function handleBorrowed(event: Borrowed): void {

@@ -88,6 +88,7 @@ templates:
         - Account
         - FYDai
         - Borrow
+        - Posted
       abis:
         - name: Controller
           file: ./abis/Controller.json

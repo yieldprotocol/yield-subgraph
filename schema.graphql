@@ -104,3 +104,12 @@ type Liquidity @entity {
   amountDai: BigDecimal!
   amountFYDai: BigDecimal!
 }
+
+type Posted @entity {
+  id: ID!
+  timestamp: BigInt!
+  from: Bytes!
+
+  amount: BigDecimal!
+  collateral: String!
+}
