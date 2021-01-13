@@ -2,7 +2,7 @@ import { Address, BigInt, BigDecimal, log } from "@graphprotocol/graph-ts"
 import { FYDai as FYDaiContract } from "../generated/templates/Pool/FYDai"
 import { Pool, Trade as TradeEvent, Liquidity as LiquidityEvent } from "../generated/templates/Pool/Pool"
 import { FYDai, Yield, Trade, Liquidity } from "../generated/schema"
-import { EIGHTEEN_DECIMALS, EIGHTEEN_ZEROS, ZERO, bigIntToFloat } from './lib'
+import { EIGHTEEN_DECIMALS, EIGHTEEN_ZEROS, ZERO, bigIntToFloat, getAccountAddress } from './lib'
 
 let SECONDS_PER_YEAR: f64 = 365 * 24 * 60 * 60
 let k = (1 as f64) / (4 * 365 * 24 * 60 * 60 as f64) // 1 / seconds in four years
@@ -125,8 +125,8 @@ export function handleTrade(event: TradeEvent): void {
   let trade = new Trade(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
   trade.timestamp = event.block.timestamp
   trade.fyDai = maturity.id
-  trade.from = event.params.from
-  trade.to = event.params.to
+  trade.from = getAccountAddress(event.params.from)
+  trade.to = getAccountAddress(event.params.to)
   trade.amountDai = event.params.daiTokens.divDecimal(EIGHTEEN_DECIMALS)
   trade.amountFYDai = event.params.fyDaiTokens.divDecimal(EIGHTEEN_DECIMALS)
 
@@ -158,8 +158,8 @@ export function handleLiquidity(event: LiquidityEvent): void {
   let liquidity = new Liquidity(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
   liquidity.timestamp = event.block.timestamp
   liquidity.fyDai = fyDai.id
-  liquidity.from = event.params.from
-  liquidity.to = event.params.to
+  liquidity.from = getAccountAddress(event.params.from)
+  liquidity.to = getAccountAddress(event.params.to)
   liquidity.amountDai = event.params.daiTokens.divDecimal(EIGHTEEN_DECIMALS)
   liquidity.amountFYDai = event.params.fyDaiTokens.divDecimal(EIGHTEEN_DECIMALS)
 

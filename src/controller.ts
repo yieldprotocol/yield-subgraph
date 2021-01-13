@@ -3,7 +3,7 @@ import { Controller, Posted as PostedEvent, Borrowed } from "../generated/templa
 import { MakerPot } from "../generated/templates/Controller/MakerPot"
 import { MakerMedianizer } from "../generated/templates/Controller/MakerMedianizer"
 import { Vault, VaultFYDai, Yield, FYDai, Borrow, Posted } from "../generated/schema"
-import { EIGHTEEN_DECIMALS, ZERO, ONE } from './lib'
+import { EIGHTEEN_DECIMALS, ZERO, ONE, getAccountAddress } from './lib'
 import { log } from '@graphprotocol/graph-ts'
 
 let potAddress = Address.fromString('0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7')
@@ -61,14 +61,15 @@ function getETHPrice(): BigDecimal {
 
 export function handlePosted(event: PostedEvent): void {
   let yieldSingleton = Yield.load('1')!
-  let account = getVault(event.params.user.toHex(), yieldSingleton)
+  let user = getAccountAddress(event.params.user)
+  let account = getVault(user.toHex(), yieldSingleton)
   let controllerContract = Controller.bind(event.address)
 
   let amount = event.params.amount.divDecimal(EIGHTEEN_DECIMALS)
 
   let posted = new Posted(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
   posted.timestamp = event.block.timestamp
-  posted.from = event.params.user
+  posted.from = getAccountAddress(event.params.user)
   posted.amount = amount
   posted.collateral = event.params.collateral.toString()
 
@@ -113,7 +114,7 @@ export function handleBorrowed(event: Borrowed): void {
   let borrow = new Borrow(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
   borrow.timestamp = event.block.timestamp
   borrow.fyDai = event.params.maturity.toString()
-  borrow.from = event.params.user
+  borrow.from = getAccountAddress(event.params.user)
   borrow.amountFYDai = borrowAmount
   borrow.collateral = event.params.collateral.toString()
 

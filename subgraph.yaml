@@ -45,6 +45,8 @@ templates:
       abis:
         - name: FYDai
           file: ./abis/FYDai.json
+        - name: DSProxy
+          file: ./abis/DSProxy.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -68,6 +70,8 @@ templates:
           file: ./abis/Pool.json
         - name: FYDai
           file: ./abis/FYDai.json
+        - name: DSProxy
+          file: ./abis/DSProxy.json
       eventHandlers:
         - event: Trade(uint256,indexed address,indexed address,int256,int256)
           handler: handleTrade
@@ -96,6 +100,8 @@ templates:
           file: ./abis/MakerPot.json
         - name: MakerMedianizer
           file: ./abis/MakerMedianizer.json
+        - name: DSProxy
+          file: ./abis/DSProxy.json
       eventHandlers:
         - event: Posted(indexed bytes32,indexed address,int256)
           handler: handlePosted
