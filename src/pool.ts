@@ -35,7 +35,7 @@ function sellFYDai(fyDaiReserves: f64, daiReserves: f64, timeTillMaturity: i32, 
 function getFee(fyDaiReserves: BigInt, daiReserves: BigInt, timeTillMaturity: BigInt, fyDai: BigInt): BigDecimal {
   let fyDaiReservesDecimal = bigIntToFloat(fyDaiReserves, 18, 2)
   let daiReservesDecimal = bigIntToFloat(daiReserves, 18, 2)
-  let fyDaiDecimal = bigIntToFloat(fyDai, 18, 4)
+  let fyDaiDecimal = bigIntToFloat(fyDai, 18, 3)
 
   let fee: f64 = 0
   if (fyDai >= ZERO) {
